@@ -19,6 +19,10 @@
         background-color: floralwhite;
         border-radius: 5px;
       }
+      #messages li.system {
+        background-color: lightgray;
+        font-style: italic;
+      }
       #form {
         display: flex;
       }
@@ -34,9 +38,28 @@
         color: whitesmoke;
         border: 0;
       }
+      #current-room {
+        font-weight: bold;
+        margin: 10px 0;
+        padding: 5px 0 5px 5px;
+        background-color: navy;
+        color: whitesmoke;
+      }
     </style>
   </head>
   <body>
+    <div>
+      <label for="room">Выбрать комнату:</label>
+      <select id="room">
+        <option value="1">Комната 1</option>
+        <option value="2">Комната 2</option>
+        <option value="3">Комната 3</option>
+      </select>
+      <button id="join">Войти в комнату</button>
+    </div>
+
+    <div id="current-room">Пользователь присоединился к комнате</div>
+
     <ul id="messages"></ul>
     <form id="form" action="">
       <input id="input" autocomplete="off" />
@@ -47,33 +70,88 @@
     <script>
       let socket = io();
       let count = 0;
+      let messagesStore = {}; // Объект для хранения сообщений по комнатам
 
       let form = document.getElementById("form");
       let input = document.getElementById("input");
       let messages = document.getElementById("messages");
+      let roomSelect = document.getElementById("room");
+      let joinButton = document.getElementById("join");
+      let currentRoom = "1";
+      let currentRoomDisplay = document.getElementById("current-room");
+
+      // Функция для отображения сообщений из массива
+      function displayMessages(room) {
+        messages.innerHTML = "";
+        let roomMessages = messagesStore[room] || [];
+        roomMessages.forEach((msg) => {
+          let item = document.createElement("li");
+          item.textContent = msg;
+          messages.appendChild(item);
+        });
+        window.scrollTo(0, document.body.scrollHeight);
+      }
+
+      joinButton.addEventListener("click", function () {
+        let selectedRoom = roomSelect.value;
+        if (selectedRoom !== currentRoom) {
+          // Сохранение текущих сообщений
+          messagesStore[currentRoom] = Array.from(messages.children).map(
+            (item) => item.textContent
+          );
+
+          // Смена комнаты
+          currentRoom = selectedRoom;
+          socket.emit("join room", currentRoom);
+
+          // Обнуление счетчика сообщений
+          count = 0;
+
+          // Отображение сообщений новой комнаты
+          displayMessages(currentRoom);
+
+          // Обновление отображения текущей комнаты
+          currentRoomDisplay.textContent = `Пользователь присоединился к комнате: ${currentRoom}`;
+        }
+      });
 
       form.addEventListener("submit", function (e) {
         e.preventDefault();
         if (input.value) {
-          socket.emit("chat message", input.value);
+          socket.emit("chat message", { room: currentRoom, msg: input.value });
           input.value = "";
         }
       });
 
       socket.on("chat message", function (msg) {
-        let item = document.createElement("li");
         count++;
+        let item = document.createElement("li");
         item.textContent = `Сообщение № ${count}: ${msg}`;
         messages.appendChild(item);
         window.scrollTo(0, document.body.scrollHeight);
+
+        // Сохранение нового сообщения в хранилище
+        if (!messagesStore[currentRoom]) {
+          messagesStore[currentRoom] = [];
+        }
+        messagesStore[currentRoom].push(`Сообщение № ${count}: ${msg}`);
+      });
+
+      socket.on("system message", function (msg) {
+        currentRoomDisplay.textContent = msg;
       });
 
       socket.on("connect", function () {
         console.log("Пользователь подключен в чат");
+        socket.emit("join room", currentRoom);
       });
 
       socket.on("disconnect", function () {
         console.log("Пользователь покинул чат");
+      });
+
+      socket.on("connect_error", function (err) {
+        console.error("Ошибка подключения:", err);
       });
     </script>
   </body>

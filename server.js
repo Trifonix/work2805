@@ -13,8 +13,18 @@ app.get("/", (req, res) => {
 io.on("connection", (socket) => {
   console.log("Пользователь подключен");
 
-  socket.on("chat message", (msg) => {
-    io.emit("chat message", msg);
+  socket.on("join room", (room) => {
+    socket.join(room);
+    console.log(`Пользователь присоединился к комнате: ${room}`);
+    io.to(room).emit(
+      "system message",
+      `Пользователь присоединился к комнате № ${room}`
+    );
+  });
+
+  socket.on("chat message", (data) => {
+    const { room, msg } = data;
+    io.to(room).emit("chat message", msg);
   });
 
   socket.on("disconnect", () => {

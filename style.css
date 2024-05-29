@@ -1,0 +1,6 @@
+body { font-family: Arial, sans-serif; }
+#messages { list-style-type: none; padding: 0; }
+#messages li { padding: 8px; margin-bottom: 10px; background-color: #f4f4f4; border-radius: 5px; }
+#form { display: flex; }
+#input { flex: 1; padding: 10px; }
+#send { padding: 10px; }

@@ -7,6 +7,7 @@
     <style>
       body {
         font-family: Arial, sans-serif;
+        background-color: lightblue;
       }
       #messages {
         list-style-type: none;
@@ -15,7 +16,7 @@
       #messages li {
         padding: 8px;
         margin-bottom: 10px;
-        background-color: #f4f4f4;
+        background-color: floralwhite;
         border-radius: 5px;
       }
       #form {
@@ -27,6 +28,11 @@
       }
       #send {
         padding: 10px;
+        margin-left: 20px;
+        border-radius: 10px;
+        background-color: firebrick;
+        color: whitesmoke;
+        border: 0;
       }
     </style>
   </head>
@@ -40,6 +46,7 @@
     <script src="/socket.io/socket.io.js"></script>
     <script>
       let socket = io();
+      let count = 0;
 
       let form = document.getElementById("form");
       let input = document.getElementById("input");
@@ -55,7 +62,8 @@
 
       socket.on("chat message", function (msg) {
         let item = document.createElement("li");
-        item.textContent = msg;
+        count++;
+        item.textContent = `Сообщение № ${count}: ${msg}`;
         messages.appendChild(item);
         window.scrollTo(0, document.body.scrollHeight);
       });

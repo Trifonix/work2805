@@ -66,6 +66,18 @@
       <button id="send">Отправить</button>
     </form>
 
+    <div>
+      <h3>Отправить в личку</h3>
+      <input id="private-user-id" placeholder="ID пользователя" />
+      <input id="private-message" placeholder="Сообщение" />
+      <button id="send-private">Отправить</button>
+    </div>
+
+    <div id="online-info">
+      <p>Пользователей в сети: <span id="global-users">0</span></p>
+      <p>Пользователей в текущей комнате: <span id="room-users">0</span></p>
+    </div>
+
     <script src="/socket.io/socket.io.js"></script>
     <script>
       let socket = io();
@@ -79,6 +91,11 @@
       let joinButton = document.getElementById("join");
       let currentRoom = "1";
       let currentRoomDisplay = document.getElementById("current-room");
+      let privateUserId = document.getElementById("private-user-id");
+      let privateMessage = document.getElementById("private-message");
+      let sendPrivateButton = document.getElementById("send-private");
+      let globalUsers = document.getElementById("global-users");
+      let roomUsers = document.getElementById("room-users");
 
       // Функция для отображения сообщений из массива
       function displayMessages(room) {
@@ -99,6 +116,9 @@
           messagesStore[currentRoom] = Array.from(messages.children).map(
             (item) => item.textContent
           );
+
+          // Оповещение сервера о выходе из текущей комнаты
+          socket.emit("leave room", currentRoom);
 
           // Смена комнаты
           currentRoom = selectedRoom;
@@ -123,6 +143,16 @@
         }
       });
 
+      sendPrivateButton.addEventListener("click", function () {
+        if (privateUserId.value && privateMessage.value) {
+          socket.emit("private message", {
+            to: privateUserId.value,
+            msg: privateMessage.value,
+          });
+          privateMessage.value = "";
+        }
+      });
+
       socket.on("chat message", function (msg) {
         count++;
         let item = document.createElement("li");
@@ -135,6 +165,18 @@
           messagesStore[currentRoom] = [];
         }
         messagesStore[currentRoom].push(`Сообщение № ${count}: ${msg}`);
+      });
+
+      socket.on("private message", function (data) {
+        let item = document.createElement("li");
+        item.textContent = `Личное сообщение от ${data.from}: ${data.msg}`;
+        messages.appendChild(item);
+        window.scrollTo(0, document.body.scrollHeight);
+      });
+
+      socket.on("online users", function (data) {
+        globalUsers.textContent = data.global;
+        roomUsers.textContent = data.rooms[currentRoom] || 0;
       });
 
       socket.on("system message", function (msg) {

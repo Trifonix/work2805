@@ -13,6 +13,15 @@ app.get("/", (req, res) => {
   res.sendFile(__dirname + "/index.html");
 });
 
+/* Подключаем стили через внешний файл */
+app.use(express.static('public', { 
+  setHeaders: (res, path) => {
+    if (path.endsWith('.css')) {
+      res.setHeader('Content-Type', 'text/css');
+    }
+  }
+}));
+
 io.on("connection", (socket) => {
   onlineUsers++;
   io.emit("online users", { global: onlineUsers, rooms: roomUsers });

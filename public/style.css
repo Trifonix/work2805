@@ -1,0 +1,40 @@
+body {
+  font-family: Arial, sans-serif;
+  background-color: lightblue;
+}
+#messages {
+  list-style-type: none;
+  padding: 0;
+}
+#messages li {
+  padding: 8px;
+  margin-bottom: 10px;
+  background-color: floralwhite;
+  border-radius: 5px;
+}
+#messages li.system {
+  background-color: lightgray;
+  font-style: italic;
+}
+#form {
+  display: flex;
+}
+#input {
+  flex: 1;
+  padding: 10px;
+}
+#send {
+  padding: 10px;
+  margin-left: 20px;
+  border-radius: 10px;
+  background-color: firebrick;
+  color: whitesmoke;
+  border: 0;
+}
+#current-room {
+  font-weight: bold;
+  margin: 10px 0;
+  padding: 5px 0 5px 5px;
+  background-color: navy;
+  color: whitesmoke;
+}

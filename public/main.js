@@ -15,6 +15,15 @@ let sendPrivateButton = document.getElementById("send-private");
 let globalUsers = document.getElementById("global-users");
 let roomUsers = document.getElementById("room-users");
 
+let registerForm = document.getElementById("register-form");
+let registerUsername = document.getElementById("register-username");
+let registerPassword = document.getElementById("register-password");
+let loginForm = document.getElementById("login-form");
+let loginUsername = document.getElementById("login-username");
+let loginPassword = document.getElementById("login-password");
+
+let token = null;
+
 // Функция для отображения сообщений из массива
 function displayMessages(room) {
   messages.innerHTML = "";
@@ -26,6 +35,49 @@ function displayMessages(room) {
   });
   window.scrollTo(0, document.body.scrollHeight);
 }
+
+registerForm.addEventListener("submit", function (e) {
+  e.preventDefault();
+  fetch("/register", {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json",
+    },
+    body: JSON.stringify({
+      username: registerUsername.value,
+      password: registerPassword.value,
+    }),
+  })
+    .then((response) => response.text())
+    .then((data) => {
+      alert(data);
+    })
+    .catch((error) => {
+      console.error("Ошибка регистрации:", error);
+    });
+});
+
+loginForm.addEventListener("submit", function (e) {
+  e.preventDefault();
+  fetch("/login", {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json",
+    },
+    body: JSON.stringify({
+      username: loginUsername.value,
+      password: loginPassword.value,
+    }),
+  })
+    .then((response) => response.json())
+    .then((data) => {
+      token = data.token;
+      alert("Успешный вход");
+    })
+    .catch((error) => {
+      console.error("Ошибка авторизации:", error);
+    });
+});
 
 joinButton.addEventListener("click", function () {
   let selectedRoom = roomSelect.value;
